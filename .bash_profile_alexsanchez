@@ -1,0 +1,179 @@
+#!/usr/bin/env bash
+
+SCRIPT_DATE=2017-10-29
+
+# clear screen
+clear
+
+if [[ "$OSTYPE" == *solaris* ]]; then
+	SOLARIS=true
+        OS_NAME="Solaris"
+	OS_VERSION="`uname -v`"
+elif [[ "$OSTYPE" == *freebsd* ]]; then
+	FREEBSD=true
+        OS_NAME="FreeBSD"
+        OS_VERSION="`sysctl -n kern.osrelease kern.ostype | head -1`"
+elif [[ "$OSTYPE" == *darwin* ]]; then
+	MACOS=true
+        OS_NAME="Mac OS X"
+        OS_VERSION="`sw_vers -productVersion`"
+elif [[ "$OSTYPE" == *linux* && "$LD_LIBRARY_PATH" == *vmware/vma*  ]]; then
+        VSPHERE_VMA=true
+	OS_NAME="Linux - vSphere Management Assistant\n    `head -1 /etc/SuSE-release`"
+	OS_VERSION="`head -1 /etc/vma-release`"
+elif [[ "$OSTYPE" == *linux* && -e /etc/centos-release  ]]; then
+	CENTOS=true
+        OS_NAME="Linux - CentOS"
+        OS_VERSION="`cat /etc/centos-release`"
+else
+	echo "Unsupported OS"
+fi
+
+if [[ "$SOLARIS" ]]; then
+        HOST=`hostname`
+else
+	HOST=`hostname -s`
+fi
+
+HOST_UPPERCASE=$(echo $HOST | tr '[:lower:]' '[:upper:]')
+
+echo ""
+echo "Common profile version: "$SCRIPT_DATE
+echo ________________________________________________________________________________
+
+which figlet > /dev/null 2>&1
+if [[ $? == 0 ]]; then
+	figlet -k -c -f slant $HOST
+else
+	if [[ -f /etc/profile.hostbanner ]]; then
+		cat /etc/profile.hostbanner
+	else
+        	echo ""
+        	echo "   "$HOST_UPPERCASE
+	fi
+fi
+
+
+echo ""
+echo -e "OS: $OS_NAME"
+echo -e "OS VERSION: $OS_VERSION"
+echo ________________________________________________________________________________
+
+echo ""
+echo "Welcome "`whoami`!
+echo ""
+
+
+if [[ $SSH_CONNECTION ]]; then
+	echo "You're now logged in remotely to "`hostname`" ("`echo $SSH_CONNECTION | awk '{ print $3 }'`")"
+	echo ""
+fi
+
+# terminal window title
+export PROMPT_COMMAND='echo -ne "\033]0;${HOSTNAME%%.*}: $USER @ ${PWD##/*/}\007"'
+
+if [[ $UID == 0 ]]; then
+	PS1='\[\033[0m\]\[\033[34m\]\h \[\033[2;90m\]\D{%a %T} `if [[ "$?" == 0 ]]; then echo -e "\e[32m\]$?"; else echo -e "\e[0;31m\]$?"; fi;` \[\033[2;34m\]\w \[\033[00m\] \n\[\033[1;31m\]\u\[\033[00m\] \[\033[1;31m\]\$ \[\033[00m\]'
+else
+        PS1='\[\033[0m\]\[\033[34m\]\h \[\033[2;90m\]\D{%a %T} `if [[ "$?" == 0 ]]; then echo -e "\e[32m\]$?"; else echo -e "\e[0;31m\]$?"; fi;` \[\033[2;34m\]\w \[\033[00m\] \n\[\033[1;32m\]\u\[\033[00m\] \[\033[1;32m\]\$ \[\033[00m\]'
+fi
+
+if [[ "$VSPHERE_VMA" ]]; then
+	typeset -x PS1=$PS1
+else
+	typeset -rx PS1=$PS1
+fi
+
+# Shell options
+shopt -s checkjobs
+shopt -s huponexit
+
+alias ld='ls -d */'
+alias lf='ls -p | grep -v /'
+alias lt='ls -tr'
+alias tree='tree -C'
+alias df='df -H'
+alias swapinfo='swapinfo -h'
+alias be=become
+alias beep='printf "\a"'
+alias pgrep='pgrep -l'
+alias hgrep='history | grep'
+alias free='free -h'
+
+#colorize the Terminal
+export GREP_OPTIONS='--color=auto'
+export CLICOLOR=1;
+
+if [[ "$SOLARIS" || "$CENTOS" ]]; then
+	alias ls='ls -lA --color=yes'
+	alias du='du -h --max-depth=1'
+else
+	alias ls='ls -lA -G'
+	alias du='du -h -d 1'
+fi
+
+become() {
+        sudo -u $1 bash -l
+}
+
+#If you pass no arguments, it just goes up one directory.
+#If you pass a numeric argument it will go up that number of directories.
+#If you pass a string argument, it will look for a parent directory with that name and go up to it.
+up()
+{
+    dir=""
+    if [ -z "$1" ]; then
+        dir=..
+    elif [[ $1 =~ ^[0-9]+$ ]]; then
+        x=0
+        while [ $x -lt ${1:-1} ]; do
+            dir=${dir}../
+            x=$(($x+1))
+        done
+    else
+        dir=${PWD%/$1/*}/$1
+    fi
+    cd "$dir";
+}
+
+function pd()
+{
+    if [[ $# -ge 1 ]];
+    then
+        choice="$1"
+    else
+        dirs -v
+        echo -n "? "
+        read choice
+    fi
+    if [[ -n $choice ]];
+    then
+        declare -i cnum="$choice"
+        if [[ $cnum != $choice ]];
+        then #choice is not numeric
+            choice=$(dirs -v | grep $choice | tail -1 | awk '{print $1}')
+            cnum="$choice"
+            if [[ -z $choice || $cnum != $choice ]];
+            then
+                echo "$choice not found"
+                return
+            fi
+        fi
+        choice="+$choice"
+    fi
+    pushd $choice
+}
+
+unset SCRIPT_DATE
+unset HISTSIZE
+unset SOLARIS
+unset MACOS
+unset FREEBSD
+unset VSPHERE_VMA
+unset CENTOS
+unset HOST_UPPERCASE
+unset HOST
+unset OS_NAME
+unset OS_VERSION
+unset SCRIPTS_MOUNT_INFO
+unset SSHD_CONFIG
