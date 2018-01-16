@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-SCRIPT_DATE=2017-10-29
+SCRIPT_DATE=2018-01-16
 
 # clear screen
 clear
@@ -85,8 +85,8 @@ else
 fi
 
 # Shell options
-shopt -s checkjobs
-shopt -s huponexit
+shopt -s checkjobs &> /dev/null
+shopt -s huponexit &> /dev/null
 
 alias ld='ls -d */'
 alias lf='ls -p | grep -v /'
