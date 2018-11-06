@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-SCRIPT_DATE=2018-01-16
+SCRIPT_DATE=2018-11-06
 
 # clear screen
 clear
