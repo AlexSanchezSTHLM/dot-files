@@ -25,6 +25,10 @@ elif [[ "$OSTYPE" == *linux* && -e /etc/centos-release  ]]; then
 	CENTOS=true
         OS_NAME="Linux - CentOS"
         OS_VERSION="`cat /etc/centos-release`"
+elif [[ "$OSTYPE" == *linux* && -e /etc/lsb-release  ]]; then
+        UBUNTU=true
+        OS_NAME="Linux - Ubuntu"
+        OS_VERSION="`grep DISTRIB_DESCRIPTION /etc/lsb-release | awk -F'"' '{print $2}'`"	
 else
 	echo "Unsupported OS"
 fi
@@ -171,9 +175,11 @@ unset MACOS
 unset FREEBSD
 unset VSPHERE_VMA
 unset CENTOS
+unset UBUNTU
 unset HOST_UPPERCASE
 unset HOST
 unset OS_NAME
 unset OS_VERSION
 unset SCRIPTS_MOUNT_INFO
 unset SSHD_CONFIG
+
