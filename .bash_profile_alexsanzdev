@@ -168,6 +168,11 @@ function pd()
     pushd $choice
 }
 
+function title()
+{
+  printf "\033]0;%s\007" "$1"
+}
+
 unset SCRIPT_DATE
 unset HISTSIZE
 unset SOLARIS
