@@ -110,11 +110,11 @@ alias free='free -h'
 #colorize the Terminal
 export CLICOLOR=1;
 
-if [[ "MACOS" ]]; then
+if [[ "$MACOS" ]]; then
 	alias ls='ls -lA'
 	alias du='du -h -d 1'
 else
-	alias ls='ls -lA --color=yes'
+	alias ls='ls -lA --color=auto'
 	alias du='du -h --max-depth=1'
 fi
 
