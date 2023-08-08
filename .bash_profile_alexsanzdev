@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-SCRIPT_DATE=2020-03-08
+SCRIPT_DATE=2023-08-08
 
 # clear screen
 clear
@@ -89,6 +89,7 @@ else
 fi
 
 # Shell options
+shopt -s histappend &> /dev/null
 shopt -s checkjobs &> /dev/null
 shopt -s huponexit &> /dev/null
 
@@ -117,6 +118,9 @@ else
 	alias ls='ls -lA --color=auto'
 	alias du='du -h --max-depth=1'
 fi
+
+
+export HISTSIZE=10000
 
 become() {
         sudo su - $1
